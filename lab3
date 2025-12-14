@@ -72,29 +72,33 @@ SOM3: somador8 port map (
         R => som3_S 
     );       
 
-
--- escolher a entrada do 3.o somador de entre 2B ou -2B
+    
+-- escolher A ou 3A (2.o MUX)
     with I select
-        som3_P <= ('0' & '0' & B & '0')   when '0',          --      2b
-                  som1_S                  when others;      --      -2b
+        som3_Q <= sign_A when '0',
+                  som2_S when others;
 
 -- calculo de -2B (1.o somador)
-    som1_P <= not('0' & '0' & B & '0');
-    som1_Q <= "00000001";
+    som1_P <= not(sign_b(6 downto 0) & '0');
+    som1_Q <= "00000000";
+    som1_cin <= '1';
     
+
 -- calculo de 3A (2.o somador)
-    som2_P <= ('0' & '0' & A & '0');
-    som2_Q <= A;
-    
--- escolher A ou 3A
+    som2_P <= (sign_a(6 downto 0) & '0'); --2A
+    som2_Q <= sign_A;                --A
+
+
+
+-- escolher a entrada do 3.o somador de entre 2B ou -2B (1.o MUX)
     with I select
-        som3_Q <= A when '0',
-                  som2_S when others;
+        som3_P <= (sign_b(6 downto 0) & '0')   when '0',     --      2b
+                   som1_S                  when others;      --     -2b
 
 -- escolher entre /2 ou /8
     with I select
-        S <= (som3_S(7) & som3_S(7) & som3_S(6) & som3_S(5) & som3_S(4)& som3_S(3)& som3_S(2)& som3_S(1)) when '0',   --shift R
-             (som3_S(7) & som3_S(7) & som3_S(7) & som3_S(7) & som3_S(6)& som3_S(5)& som3_S(4)& som3_S(3)) when others;-- shift R x3
+        S <= (som3_S(7) & som3_S(7 downto 1)) when '0',   --shift R
+             (som3_S(7) & som3_S(7) & som3_S(7) & som3_S(7 downto 3)) when others;-- shift R x3
 
     
 end Behavioral;
