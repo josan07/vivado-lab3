@@ -1,0 +1,120 @@
+--------------------------------------------------------------
+-- Numero do Grupo: <n�mero do grupo>
+-- <nome do 1� elemento do grupo> (<n�mero do 1� elemento do grupo>)
+-- <nome do 2� elemento do grupo> (<n�mero do 2� elemento do grupo>)
+--------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity lab2 is
+    Port ( A : in STD_LOGIC_VECTOR (3 downto 0);
+           P : in STD_LOGIC_VECTOR (1 downto 0);
+           C : out STD_LOGIC_VECTOR (3 downto 0);
+           S : out STD_LOGIC);
+end lab2;
+
+architecture Behavioral of lab2 is
+-- declaration of components (DEC, MUX...)
+
+--Decoder 3:8 saidas negadas
+component DEC3x8n
+    Port (  en : in STD_LOGIC;
+           d4, d2, d1 : in STD_LOGIC;
+           y7n, y6n, y5n, y4n, y3n, y2n, y1n, y0n : out STD_LOGIC);
+end component;
+
+--Decoder 3:8 
+component DEC3x8
+    Port (  en : in STD_LOGIC;
+            d4, d2, d1 : in STD_LOGIC;
+            y7, y6, y5, y4, y3, y2, y1, y0 : out STD_LOGIC);
+end component;
+
+--MUX 4:1
+component MUX4x1
+    Port(   g1, g0 : in STD_LOGIC;   
+            d3, d2, d1, d0 : in STD_LOGIC;
+            y : out STD_LOGIC);
+end component;
+
+--MUX 8:1
+component MUX8x1
+    Port(   g2, g1, g0 : in STD_LOGIC;
+            d7, d6, d5, d4, d3, d2, d1, d0 : in STD_LOGIC;
+            y : out STD_LOGIC);
+end component;
+
+-- declaration of internal signals (fios)
+-- o sinal interno cat vai identificar a categoria corresponde ao codigo do produto (A3,A2,A1,A0)
+signal cat : std_logic_vector(3 downto 0);
+signal dec0n : std_logic_vector(7 downto 0);  -- liga as 8 saidas do descodificador DEC0N
+signal dec1 : std_logic_vector(7 downto 0);  -- liga as 8 saidas descodificador DEC1
+signal dec2n : std_logic_vector(7 downto 0); -- liga as 8 saidas do descodificador DEC2N
+signal smux : std_logic;                     -- liga a saida do MUX8
+
+-- inclua abaixo todos os outros sinais internos necessarios
+-- os sinais incluidos abaixo sao apenas um exemplo para o seu trabalho de casa
+-- acrescente todos os sinais internos necessarios para a realizacao do seu projecto especifico.
+signal a3n : std_logic;    
+signal zero : std_logic;    -- use este sinal para ligar entradas de componentes a zero.
+signal a0n : std_logic;
+signal one : std_logic;
+
+begin
+-- DEFINICAO DOS SINAIS INTERNOS 
+-- defina os sinais necessarios para as ligacoes do circuito
+-- os sinais abaixo sao exemplo
+  a3n <= not a(3);  -- exemplo de porta NOT
+  a0n <= not a(0);
+  zero <= '0';      -- este sinal fica sempre fixo a zero.
+  one <= '1';
+  
+-- ligacao da saida C
+  c <= cat;
+  
+-- INSTANCIACAO DOS COMPONENTES (port map) E DEFINICAO DAS FUNCOES LOGICAS
+-- as entradas dos componentes e funcoes logicas estao pre-ligadas a zero
+-- ligue todas as entradas dos componentes aos sinais correctos : substitua os 'zero' 
+-- defina as funcoes logicas
+  
+  -- ligar entradas do DEC  
+  inst_dec0n : DEC3x8n port map (    
+    en => a0n ,  d1 => a(1) , d2 => a(2) , d4 => a(3) ,
+    y0n => dec0n(0) , y1n => dec0n(1) , y2n => dec0n(2) , y3n => dec0n(3) , 
+    y4n => dec0n(4) , y5n => dec0n(5) , y6n => dec0n(6) , y7n => dec0n(7)  );
+  -- definir funcao logica para Cat0
+  Cat(0) <= not(dec0n(0) and dec0n(2) and dec0n(4)) ;
+
+  -- ligar entradas do MUX
+  inst_mux8 : MUX8x1 port map (
+    g0 => a(0) , g1 => a(1) , g2 => a(2) ,
+    d0 => zero , d1 => zero , d2 => one, d3 => zero, 
+    d4 => zero, d5 => zero, d6 => zero, d7 => zero, 
+    y => smux );
+  Cat(1) <= smux  ;  -- Cat1 = saida do MUX
+  
+  -- ligar entradas do DEC  
+  inst_dec1 : DEC3x8 port map (
+    en => a3n , d1 => a(0) , d2 => a(1) , d4 => a(2) ,
+    y0 => dec1(0) , y1 => dec1(1) , y2 => dec1(2) , y3 => dec1(3) , 
+    y4 => dec1(4) , y5 => dec1(5) , y6 => dec1(6) , y7 => dec1(7)  );
+  -- definir funcao logica para Cat2
+  Cat(2) <= dec1(6)  ;  -- funcao logica
+
+  -- ligar entradas do DEC  
+  inst_dec2n : DEC3x8n port map (
+    en => a0n ,  d1 => one , d2 => a(2) , d4 => a(3) ,
+    y0n => dec2n(0) , y1n => dec2n(1) , y2n => dec2n(2) , y3n => dec2n(3) , 
+    y4n => dec2n(4) , y5n => dec2n(5) , y6n => dec2n(6) , y7n => dec2n(7)  );
+  -- definir funcao logica para Cat3 
+   Cat(3) <= not(dec2n(6) and dec2n(7));  
+     
+ 
+  -- MUX de seleccao final - ja' ligado (para exemplo), nao precisa de alterar
+  inst_mux4 : MUX4x1 port map (
+    g0 => p(0), g1 => p(1),
+    d0 => Cat(0), d1 => Cat(1), d2 => Cat(2), d3 => Cat(3),
+    y => S );
+
+end Behavioral;
