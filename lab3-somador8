@@ -69,20 +69,17 @@ SOM2: somador4 port map (
         S => som2_S, cout => som2_cout
     );
 
--- Attribui��o das entradas do somador 1 
--- DEVE COMPLETAR
+-- Attribuicao das entradas do somador 1 
     som1_P   <= P(3 downto 0);
     som1_Q   <= Q(3 downto 0);
     som1_cin <= '0';
     
--- Attribui��o das entradas do somador 2 
--- DEVE COMPLETAR
+-- Attribuicao das entradas do somador 2 
     som2_P   <= P(7 downto 4);
     som2_Q   <= Q(7 downto 4);
     som2_cin <= som1_cout;    
   
--- Attribui��o das saidas do somador8
--- DEVE COMPLETAR 
+-- Attribuicao das saidas do somador8
     cout <= som2_cout;
     R    <= som2_S & som1_S;
 
